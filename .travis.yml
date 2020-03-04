@@ -1,0 +1,13 @@
+os: linux
+language: generic
+services:
+  - docker
+
+if: branch = master
+
+before_script:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+script:
+  - docker build . -t triggerhappy/aws-securitygroup-manager:latest
+  - docker push triggerhappy/aws-securitygroup-manager:latest
