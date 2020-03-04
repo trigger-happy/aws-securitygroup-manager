@@ -48,6 +48,12 @@ spec:
               name: aws-securitygroup-manager-env
               key: AWS_DEFAULT_REGION
 
+        - name: AWS_REGION
+          valueFrom:
+            secretKeyRef:
+              name: aws-securitygroup-manager-env
+              key: AWS_REGION
+
         - name: FROM_PORT
           valueFrom:
             secretKeyRef:
