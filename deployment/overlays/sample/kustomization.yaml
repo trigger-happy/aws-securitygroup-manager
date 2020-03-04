@@ -1,0 +1,9 @@
+---
+namespace: aws-securitygroup-manager
+resources:
+- ../../base
+secretGenerator:
+- envs:
+  - secrets/env
+  name: aws-securitygroup-manager-env
+  type: Opaque

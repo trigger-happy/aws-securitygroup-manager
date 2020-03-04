@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aws-securitygroup-manager
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - image: triggerhappy/aws-securitygroup-manager:latest
+        name: aws-securitygroup-manager
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-securitygroup-manager-env
+              key: AWS_ACCESS_KEY_ID
+
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-securitygroup-manager-env
+              key: AWS_SECRET_ACCESS_KEY
+
+        - name: AWS_VPC_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-securitygroup-manager-env
+              key: AWS_VPC_ID
+
+        - name: AWS_SGMANAGER_OWNER_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-securitygroup-manager-env
+              key: AWS_SGMANAGER_OWNER_ID
+
+        - name: AWS_SECURITY_GROUP_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-securitygroup-manager-env
+              key: AWS_SECURITY_GROUP_ID
+
+        - name: AWS_DEFAULT_REGION
+          valueFrom:
+            secretKeyRef:
+              name: aws-securitygroup-manager-env
+              key: AWS_DEFAULT_REGION
+
+        - name: FROM_PORT
+          valueFrom:
+            secretKeyRef:
+              name: aws-securitygroup-manager-env
+              key: FROM_PORT
+
+        - name: TO_PORT
+          valueFrom:
+            secretKeyRef:
+              name: aws-securitygroup-manager-env
+              key: TO_PORT
+
+        - name: PROTOCOL
+          valueFrom:
+            secretKeyRef:
+              name: aws-securitygroup-manager-env
+              key: PROTOCOL
+
+        resources:
+          limits:
+            cpu: "1"
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi

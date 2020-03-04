@@ -1,0 +1,11 @@
+---
+namespace: aws-securitygroup-manager
+resources:
+- deployment.yaml
+- rbac.yaml
+- serviceaccount.yaml
+commonLabels:
+  app.kubernetes.io/name: aws-securitygroup-manager
+  app.kubernetes.io/instance: main-instance
+  app.kubernetes.io/component: support-apps
+  app.kubernetes.io/part-of: aws-securitygroup-manager
