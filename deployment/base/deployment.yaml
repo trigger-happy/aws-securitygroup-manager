@@ -7,6 +7,7 @@ spec:
   replicas: 1
   template:
     spec:
+      serviceAccountName: aws-securitygroup-manager
       containers:
       - image: triggerhappy/aws-securitygroup-manager:latest
         name: aws-securitygroup-manager
