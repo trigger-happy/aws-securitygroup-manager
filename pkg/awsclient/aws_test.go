@@ -27,11 +27,12 @@ func TestReplaceOwnedEntries(t *testing.T) {
 			t.Errorf("ReplaceOwnedEntries failure: %s", err)
 		}
 
-		ownedEntries, err := aws.GetOwnedEntries()
+		ownedEntries, err := aws.GetInboundRules()
 		if err != nil {
 			t.Errorf("Could not get owned entries: %s", err)
 		}
-		if len(ownedEntries) != len(validEntries) {
+		expandedEntries := expandRules(ownedEntries)
+		if len(expandedEntries) != len(validEntries) {
 			t.Errorf("Replacement of owned entries failed")
 		}
 

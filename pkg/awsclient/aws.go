@@ -93,17 +93,24 @@ func (a *AwsContext) ReplaceOwnedEntries(entries []*RuleEntry) error {
 		ruleList = append(ruleList, &replacement)
 	}
 
-	oldRules, err := a.GetInboundRulesOwnedByID()
+	// get all the rules in this security group
+	oldRules, err := a.GetInboundRules()
 	if err != nil {
 		return fmt.Errorf("ReplaceOwnedEntries error while getting old rules: %w", err)
 	}
 
-	err = a.DeleteInboundRules(oldRules)
-	if err != nil {
-		return fmt.Errorf("ReplaceOwnedEntries error while deleting old rules: %w", err)
-	}
+	// expand the rules and then get the ones that we don't own
+	expandedRules := expandRules(oldRules)
+	notMyRules := filterInboundRules(expandedRules, &a.OwnerID, false)
+	a.DeleteInboundRules(oldRules)
 
-	return a.SetInboundRules(ruleList)
+	// create the new rules list
+	newRules := make([]*ec2.IpPermission, 0)
+	newRules = append(newRules, notMyRules...)
+	newRules = append(newRules, ruleList...)
+
+	// save it
+	return a.SetInboundRules(newRules)
 }
 
 // The Description column in an AWS Security Group allows for arbitrary data.
@@ -257,12 +264,35 @@ func isRuleOwnedByID(rule *ec2.IpPermission, ownerID *string) bool {
 	return *owner == *ownerID
 }
 
+// AWS tends to lump up several IpPermission objects together if their protocol
+// and port ranges match and then put the differences into an ipRanges array.
+// This function will create new ec2.IpPermission objects for each of those
+// IpRange entries.
+func expandRules(rules []*ec2.IpPermission) []*ec2.IpPermission {
+	results := make([]*ec2.IpPermission, 0)
+
+	for _, rule := range rules {
+		for _, iprange := range rule.IpRanges {
+			var newRule ec2.IpPermission
+			newRule.FromPort = rule.FromPort
+			newRule.ToPort = rule.ToPort
+			newRule.IpProtocol = rule.IpProtocol
+			newRule.IpRanges = make([]*ec2.IpRange, 0)
+			newRule.IpRanges = append(newRule.IpRanges, iprange)
+			results = append(results, &newRule)
+		}
+	}
+
+	return results
+}
+
 // Given a list of ec2.IpPermission objects, return the ones that are owned by
 // ownerID if returnOwned is true. Do the opposite otherwise.
 func filterInboundRules(rules []*ec2.IpPermission, ownerID *string, returnOwned bool) []*ec2.IpPermission {
 	results := make([]*ec2.IpPermission, 0)
 
-	for _, rule := range rules {
+	expandedRules := expandRules(rules)
+	for _, rule := range expandedRules {
 		ruleIsOwned := isRuleOwnedByID(rule, ownerID)
 		if (returnOwned && ruleIsOwned) ||
 			(!returnOwned && !ruleIsOwned) {
